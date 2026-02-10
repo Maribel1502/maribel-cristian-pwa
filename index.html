@@ -1,211 +1,356 @@
 <!DOCTYPE html>
 html
 <body>
-    <!-- FONDO ROSA CON CORAZONES -->
-    <div class="bg-love"></div>
+  <!-- Fondo rosa con corazones “bokeh” -->
+  <div class="bg">
+    <div id="bg-hearts"></div>
+  </div>
 
-    <!-- TARJETA PRINCIPAL -->
-    <div class="love-card">
-        <p class="title">Para el amor de mi vida:</p>
-      <p class="subtitle">Si pudiera elegir un lugar seguro, seria a tu lado. </p>
-    <p class="subtitle">Cuánto más tiempo estoy contigo más te amo. </p>
+  <!-- Tarjeta -->
+  <section class="scene">
+    <div class="card">
+      <p class="title">Para el amor de mi vida:</p>
 
-        <!-- Árbol en canvas -->
-        <canvas id="heartTree"></canvas>
+      <!-- Canvas del árbol -->
+      <div class="tree-wrap">
+        <canvas id="treeCanvas"></canvas>
+      </div>
 
-        <p class="sub">Mi amor por ti comenzó hace…</p>
+      <p class="lead">Mi amor por ti comenzó hace…</p>
 
-        <p class="timer">
-            <span id="d"></span> días  
-            <span id="h"></span> horas  
-            <span id="m"></span> minutos  
-            <span id="s"></span> segundos
-        </p>
+      <p class="timer">
+        <span id="d" class="num"></span> <span class="unit">días</span>
+        <span id="h" class="num"></span> <span class="unit">horas</span>
+        <span id="m" class="num"></span> <span class="unit">minutos</span>
+        <span id="s" class="num"></span> <span class="unit">segundos</span>
+      </p>
 
-        <div class="floor"></div>
+      <div class="floor" aria-hidden="true"></div>
     </div>
+  </section>
 
-<style>
-/* ------- FONDO ------- */
-body {
-    margin: 0;
-    padding: 0;
-    background: #d7006d;
-    overflow-x: hidden;
-    font-family: "Arial Rounded MT", sans-serif;
-}
-
-.bg-love {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: url("https://i.imgur.com/V14YtXx.png"); /* corazones borrosos ROSA */
-    background-size: cover;
-    background-position: center;
-    filter: blur(3px) brightness(1.2);
-    z-index: -2;
-}
-
-/* ------- TARJETA ------- */
-.love-card {
-    width: 90%;
-    max-width: 800px;
-    margin: 40px auto;
-    background: #fbeee8;
-    border-radius: 40px;
-    padding: 30px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-
-.title {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
-    color: #4d3b3b;
-}
-
-.sub {
-    margin-top: 10px;
-    font-size: 1.1rem;
-    color: #6d5a5a;
-    font-weight: 500;
-}
-
-.timer {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin-top: 5px;
-    color: #333;
-}
-
-.floor {
-    width: 100%;
-    height: 2px;
-    background: #4d3b3b;
-    margin-top: 15px;
-}
-
-/* CANVAS */
-#heartTree {
-    width: 100%;
-    height: 350px;
-    display: block;
-}
-</style>
-
-<script>
-// ===============================
-//       ÁRBOL EN FORMA DE CORAZÓN
-// ===============================
-const canvas = document.getElementById("heartTree");
-const ctx = canvas.getContext("2d");
-
-function resizeCanvas() {
-    canvas.width = canvas.clientWidth * 2;
-    canvas.height = canvas.clientHeight * 2;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-// PALLETA ROJOS Y ROSAS
-const COLORS = [
-    "#ff1744","#ff3d57","#ff6f71","#ff8a80","#ffadc2",
-    "#ff4d4d","#ff335f","#ff5c8a","#ff7a90","#ff9999"
-];
-
-// HOJAS
-let leaves = [];
-function createLeaves() {
-    leaves = [];
-    const cx = canvas.width / 2;
-    const cy = canvas.height * 0.40;
-
-    for (let i = 0; i < 350; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 180 * Math.sqrt(Math.random());
-
-        const x = cx + radius * Math.cos(angle);
-        const y = cy + radius * Math.sin(angle) * 0.65;
-
-        leaves.push({
-            x, y,
-            size: Math.random() * 12 + 8,
-            color: COLORS[Math.floor(Math.random()*COLORS.length)],
-            fall: Math.random() < 0.01 ? true : false,
-            vy: Math.random() * 0.4 + 0.2,
-            vx: (Math.random() - 0.5) * 0.3,
-            rotate: Math.random() * Math.PI,
-            vr: (Math.random()-0.5) * 0.02
-        });
+  <style>
+    :root{
+      --bg-1:#d1006c;
+      --bg-2:#ff3b93;
+      --card:#f7e8dd;        /* beige de la tarjeta */
+      --ink:#3a2e2e;
+      --muted:#6c5959;
+      --floor:#3e3232;
     }
-}
-createLeaves();
 
-function drawHeart(x, y, size, rot, color) {
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      color:var(--ink);
+      background: radial-gradient(1100px 600px at 20% -10%, #ff6aa540, transparent 60%),
+                  radial-gradient(900px 600px at 110% 10%, #ff2b7a33, transparent 60%),
+                  linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+      overflow-x:hidden;
+    }
+
+    /* corazones bokeh del fondo */
+    .bg{position:fixed; inset:0; z-index:-2; overflow:hidden}
+    #bg-hearts span{
+      position:absolute;
+      color:#ffd0e1;
+      opacity:.22;
+      font-size:clamp(18px, 4vw, 34px);
+      filter: blur(.6px);
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp{
+      from{ transform:translateY(110vh) rotate(0deg) }
+      to  { transform:translateY(-20vh) rotate(360deg) }
+    }
+
+    /* contenedor de la tarjeta */
+    .scene{
+      max-width:980px;
+      margin:24px auto 40px;
+      padding:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:40px;
+      padding:28px 26px 20px;
+      box-shadow:0 16px 42px rgba(0,0,0,.22);
+      position:relative;
+    }
+
+    .title{
+      margin:6px 2px 10px;
+      color:#5a4747;
+      font-size:clamp(18px, 3.6vw, 22px);
+      font-weight:600;
+    }
+
+    .tree-wrap{
+      position:relative;
+      width:100%;
+      aspect-ratio: 16/9;
+      border-radius:22px;
+      overflow:hidden; /* para recortar la copa como en el video */
+      background: linear-gradient(180deg,#f9eee6 0%, #f4e4d8 100%);
+    }
+
+    #treeCanvas{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .lead{
+      margin:16px 2px 2px;
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .timer{
+      margin:0 2px 10px;
+      display:flex; flex-wrap:wrap; gap:.45rem .35rem; align-items:baseline;
+      color:var(--ink);
+    }
+    .timer .num{
+      font-size:clamp(20px, 4.8vw, 28px);
+      font-weight:800;
+      letter-spacing:.2px;
+      margin-right:.25rem;
+    }
+    .timer .unit{
+      color:#5f5252;
+      font-weight:600;
+      margin-right:.6rem;
+    }
+
+    .floor{
+      height:2px; background:var(--floor);
+      margin-top:8px; border-radius:2px;
+    }
+  </style>
+
+  <script>
+  /* ===========================
+     Corazones bokeh del fondo
+     =========================== */
+  (function fillBackgroundHearts(){
+    const container = document.getElementById('bg-hearts');
+    const N = 28, durBase = 22;
+    for(let i=0;i<N;i++){
+      const s = document.createElement('span');
+      s.textContent = '❤';
+      s.style.left = (Math.random()*100)+'%';
+      s.style.bottom = (-20 + Math.random()*40) + 'vh';
+      s.style.fontSize = (18 + Math.random()*46)+'px';
+      s.style.opacity = (0.14 + Math.random()*0.18);
+      s.style.animationDuration = (durBase + Math.random()*16)+'s';
+      s.style.animationDelay = (-Math.random()*durBase)+'s';
+      container.appendChild(s);
+    }
+  })();
+
+  /* ===========================
+     Árbol con copa en forma de corazón
+     =========================== */
+  const canvas = document.getElementById('treeCanvas');
+  const ctx = canvas.getContext('2d', { alpha:true });
+
+  let W,H,DPR;
+  function fit(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    const bb = canvas.getBoundingClientRect();
+    W = Math.floor(bb.width);
+    H = Math.floor(bb.height);
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  fit(); addEventListener('resize', fit);
+
+  // paleta rojos/rosas
+  const PALETTE = [
+    "#FF1744","#F44336","#E53935","#D32F2F","#C62828",
+    "#FF3D7F","#FF6F91","#FF8A80","#F06292","#E91E63","#F48FB1"
+  ];
+
+  // función para saber si (x,y) está dentro de una forma de corazón
+  // (x,y) normalizados en [-1.2,1.2]
+  function insideHeart(x, y){
+    const a = (x*x + y*y - 1);
+    return (a*a*a - x*x*y*y*y) <= 0;
+  }
+
+  const leaves = [];
+  const falling = [];
+
+  function seedTree(){
+    leaves.length = 0;
+    falling.length = 0;
+
+    // posición de la copa y escala (a la derecha de la tarjeta)
+    const cx = W * 0.66;
+    const cy = H * 0.46;
+    const sx = W * 0.18;    // escala en X
+    const sy = H * 0.22;    // escala en Y
+
+    const count = 520;      // densidad de follaje
+    for(let i=0;i<count;i++){
+      // muestreo por rechazo dentro del corazón normalizado
+      let x,y,tries=0;
+      do{
+        x = (Math.random()*2.4 - 1.2);
+        y = (Math.random()*2.4 - 1.2);
+        tries++;
+        if(tries>20) break;
+      }while(!insideHeart(x,y));
+
+      const px = cx + x*sx + (Math.random()-0.5)*6;
+      const py = cy + y*sy + (Math.random()-0.5)*6;
+
+      leaves.push({
+        x: px, y: py,
+        baseX: px, baseY: py,
+        size: 8 + Math.random()*10,
+        rot: Math.random()*Math.PI,
+        color: PALETTE[(Math.random()*PALETTE.length)|0],
+        swayA: 4 + Math.random()*8,
+        swayW: .6 + Math.random()*1.1,
+        t0: Math.random()*1000
+      });
+    }
+  }
+  seedTree();
+
+  function drawHeart(x,y,s,rot,col){
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(x,y);
     ctx.rotate(rot);
-    ctx.scale(size, size);
-
+    ctx.scale(s*0.1, s*0.1);
     ctx.beginPath();
-    ctx.moveTo(0, -2);
-    ctx.bezierCurveTo(2, -4, 6, -2, 0, 4);
-    ctx.bezierCurveTo(-6, -2, -2, -4, 0, -2);
+    ctx.moveTo(0,-10);
+    ctx.bezierCurveTo(12,-24, 34,-14, 0, 12);
+    ctx.bezierCurveTo(-34,-14, -12,-24, 0,-10);
     ctx.closePath();
-
-    ctx.fillStyle = color;
+    // relleno sólido (estética del ejemplo)
+    ctx.fillStyle = col;
+    ctx.shadowColor = 'rgba(0,0,0,.12)';
+    ctx.shadowBlur = 2;
     ctx.fill();
     ctx.restore();
-}
+  }
 
-function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+  function drawTrunk(){
+    // tronco delgado y recto
+    const baseX = W*0.64, topY = H*0.55, bottomY = H*0.90;
+    ctx.save();
+    ctx.fillStyle = '#8f5f30';
+    ctx.beginPath();
+    ctx.moveTo(baseX-14, topY);
+    ctx.lineTo(baseX+14, topY);
+    ctx.lineTo(baseX+20, bottomY);
+    ctx.lineTo(baseX-20, bottomY);
+    ctx.closePath();
+    ctx.fill();
 
-    // tronco
-    ctx.fillStyle = "#8f5f30";
-    ctx.fillRect(canvas.width/2 - 12, canvas.height*0.40, 24, 160);
-
-    leaves.forEach(l => {
-        if (l.fall) {
-            l.y += l.vy;
-            l.x += l.vx;
-            l.rotate += l.vr;
-        } else if (Math.random() < 0.0006) {
-            l.fall = true;
-        }
-
-        drawHeart(l.x, l.y, l.size * 0.1, l.rotate, l.color);
-    });
-
-    requestAnimationFrame(animate);
-}
-animate();
-
-// ===============================
-//          CONTADOR EN UTC
-// ===============================
-function startCounter(dateStr) {
-    const [Y, M, D] = dateStr.split("-").map(Number);
-    const start = Date.UTC(Y, M-1, D);
-
-    function tick() {
-        let diff = Date.now() - start;
-        const d = Math.floor(diff / 86400000);
-        diff -= d * 86400000;
-        const h = Math.floor(diff / 3600000);
-        diff -= h * 3600000;
-        const m = Math.floor(diff / 60000);
-        diff -= m * 60000;
-        const s = Math.floor(diff / 1000);
-
-        document.getElementById("d").textContent = d;
-        document.getElementById("h").textContent = h;
-        document.getElementById("m").textContent = m;
-        document.getElementById("s").textContent = s;
+    // ramitas internas discretas
+    ctx.strokeStyle = '#7c5330';
+    ctx.lineWidth = 2;
+    for(let i=0;i<8;i++){
+      ctx.beginPath();
+      ctx.moveTo(baseX + (Math.random()*10-5), topY+4);
+      const rx = baseX + (Math.random()*W*0.22);
+      const ry = topY - (Math.random()*H*0.18);
+      ctx.lineTo(rx, ry);
+      ctx.stroke();
     }
-    tick();
-    setInterval(tick, 1000);
-}
+    ctx.restore();
+  }
 
-startCounter("2024-12-20");
-</script>
+  // Parámetros de caída (lento hacia la izquierda como el video)
+  const LEAF_FALL_PROB = 0.0010; // menos desprendimientos
+  const WIND_STRENGTH  = 0.35;
+
+  let tStart = performance.now();
+  function tick(now){
+    const t = (now - tStart)/1000;
+
+    ctx.clearRect(0,0,W,H);
+
+    // fondo de la “escena” (muy sutil dentro del canvas)
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#f9efe7'); g.addColorStop(1,'#f2e1d7');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+    drawTrunk();
+
+    // hojas “pegadas” con suave vaivén
+    for(const leaf of leaves){
+      const wind = Math.sin((t+leaf.t0)*leaf.swayW) * leaf.swayA * WIND_STRENGTH;
+      const x = leaf.baseX + wind;
+      const y = leaf.baseY + Math.sin((t+leaf.t0)*leaf.swayW*0.9)*1.6;
+      const r = leaf.rot + Math.sin((t+leaf.t0)*leaf.swayW)*0.15;
+      drawHeart(x,y,leaf.size,r,leaf.color);
+
+      // ocasionalmente se desprenden (desde la zona inferior‑izquierda de la copa)
+      if(Math.random() < LEAF_FALL_PROB && x < W*0.72){
+        falling.push({
+          x, y,
+          vx: -(0.4 + Math.random()*0.6), // se mueven hacia la izquierda
+          vy:  (0.3 + Math.random()*0.5),
+          rot: r, vr: (Math.random()-.5)*0.04,
+          size: leaf.size, color: leaf.color, life: 0
+        });
+      }
+    }
+
+    // hojas cayendo con trayectoria dulce a la izquierda
+    for(let i=falling.length-1; i>=0; i--){
+      const f = falling[i];
+      f.life += 1/60;
+      const gust = Math.sin((t+f.life*2)*1.1)*0.12*WIND_STRENGTH;
+      f.vx += (-0.003 + gust*0.002); // empuje leeeeve a la izquierda
+      f.vy +=  0.020;                // gravedad pequeña (caída lenta)
+      f.x  +=  f.vx * 1.4;
+      f.y  +=  f.vy * 1.4;
+      f.rot+=  f.vr;
+      drawHeart(f.x,f.y,f.size,f.rot,f.color);
+      if(f.y > H+30 || f.x < -30) falling.splice(i,1);
+    }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  addEventListener('resize', ()=>{ fit(); seedTree(); });
+
+  /* ===========================
+     Contador en UTC (sin desfase)
+     =========================== */
+  const FECHA_INICIO = "2024-12-20"; // <-- ajusta aquí si cambias la fecha
+  function startCounter(isoDate){
+    const [Y,M,D] = isoDate.split('-').map(Number);
+    const startUTC = Date.UTC(Y, M-1, D, 0,0,0);
+    const dEl = document.getElementById('d');
+    const hEl = document.getElementById('h');
+    const mEl = document.getElementById('m');
+    const sEl = document.getElementById('s');
+
+    function update(){
+      let diff = Math.max(0, Date.now() - startUTC);
+      const d = Math.floor(diff/86400000); diff -= d*86400000;
+      const h = Math.floor(diff/3600000);  diff -= h*3600000;
+      const m = Math.floor(diff/60000);    diff -= m*60000;
+      const s = Math.floor(diff/1000);
+      dEl.textContent=d;
+      hEl.textContent=String(h);
+      mEl.textContent=String(m).padStart(2,'0');
+      sEl.textContent=String(s).padStart(2,'0');
+    }
+    update(); setInterval(update, 1000);
+  }
+  startCounter(FECHA_INICIO);
+  </script>
 </body>
