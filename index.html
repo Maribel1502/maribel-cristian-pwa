@@ -1,209 +1,341 @@
 <!DOCTYPE html>
-html
-<body>
-    <!-- FONDO ROSA CON CORAZONES -->
-    <div class="bg-love"></div>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 
-    <!-- TARJETA PRINCIPAL -->
-    <div class="love-card">
-        <p class="title">Para el amor de mi vida:</p>
+<title>Maribel y Cristian — Árbol de Corazones (PWA)</title>
 
-        <!-- Árbol en canvas -->
-        <canvas id="heartTree"></canvas>
+<!-- PWA: Manifest + theme -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffd7e8">
 
-        <p class="sub">Mi amor por ti comenzó hace…</p>
-
-        <p class="timer">
-            <span id="d"></span> días  
-            <span id="h"></span> horas  
-            <span id="m"></span> minutos  
-            <span id="s"></span> segundos
-        </p>
-
-        <div class="floor"></div>
-    </div>
+<!-- iOS (opcional) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <style>
-/* ------- FONDO ------- */
-body {
-    margin: 0;
-    padding: 0;
-    background: #d7006d;
-    overflow-x: hidden;
-    font-family: "Arial Rounded MT", sans-serif;
-}
+  :root{
+    --card-bg:#fff6f9;
+    --card-radius:28px;
+    --accent:#ff6f91;
+    --ink:#3a2b2e;
+  }
 
-.bg-love {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: url("https://i.imgur.com/V14YtXx.png"); /* corazones borrosos ROSA */
-    background-size: cover;
-    background-position: center;
-    filter: blur(3px) brightness(1.2);
-    z-index: -2;
-}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(255,180,200,.35), transparent 60%),
+      radial-gradient(1000px 700px at 120% 10%, rgba(255,210,230,.45), transparent 60%),
+      linear-gradient(180deg, #fff0f5 0%, #ffe3ee 40%, #ffd7e8 100%);
+    overflow-x:hidden;
+  }
 
-/* ------- TARJETA ------- */
-.love-card {
-    width: 90%;
-    max-width: 800px;
-    margin: 40px auto;
-    background: #fbeee8;
-    border-radius: 40px;
-    padding: 30px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
+  .bg-hearts{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .bg-heart{
+    position:absolute; color:#ffb3c1; opacity:.18; font-size:clamp(16px, 4vw, 36px);
+    animation: floatBg linear infinite; filter: blur(.2px);
+  }
+  @keyframes floatBg{
+    from{ transform:translateY(110vh) rotate(0deg) }
+    to  { transform:translateY(-20vh) rotate(360deg) }
+  }
 
-.title {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
-    color: #4d3b3b;
-}
+  .wrap{ position:relative; z-index:1; max-width:860px; margin:26px auto; padding:16px; }
+  .card{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    box-shadow:0 12px 40px rgba(0,0,0,.12);
+    padding:24px 16px 28px;
+    border:1px solid #ffe2ec;
+  }
 
-.sub {
-    margin-top: 10px;
-    font-size: 1.1rem;
-    color: #6d5a5a;
-    font-weight: 500;
-}
+  .title{ text-align:center; font-weight:800; letter-spacing:.3px; margin:6px 8px 4px; font-size:clamp(20px, 4.6vw, 28px); color:#a14d66; }
+  .subtitle{ text-align:center; margin:0 0 16px; color:#b36a80; font-weight:600; }
 
-.timer {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin-top: 5px;
-    color: #333;
-}
+  .canvas-wrap{ position:relative; width:100%; aspect-ratio: 16/10; border-radius:18px; overflow:hidden; background: #ffe9f0; border:1px solid #ffd6e3; }
 
-.floor {
-    width: 100%;
-    height: 2px;
-    background: #4d3b3b;
-    margin-top: 15px;
-}
+  .lead{margin:14px 10px 4px; color:#7d5a63}
+  .timer{ margin:0 10px 10px; font-size:clamp(18px, 4.5vw, 26px); font-weight:800; color:#5b434a; letter-spacing:.2px; }
+  .ground{ height:2px; background:#9a6f6f; opacity:.35; margin:10px 6px 0; border-radius:2px; }
 
-/* CANVAS */
-#heartTree {
-    width: 100%;
-    height: 350px;
-    display: block;
-}
+  .cta{ display:flex; justify-content:center; margin-top:18px; }
+  .love-btn{
+    position:relative; display:inline-flex; align-items:center; gap:.6rem;
+    padding:.95rem 1.25rem; border-radius:999px; border:none; cursor:pointer;
+    font-weight:900; letter-spacing:.4px; color:white;
+    background: radial-gradient(120% 180% at 30% 20%, #ff9ab2, #ff6f91 50%, #ff477e 100%);
+    box-shadow: 0 10px 22px rgba(255,111,145,.35), inset 0 0 18px rgba(255,255,255,.18);
+    transform:translateZ(0); animation:pulse 2.2s ease-in-out infinite; user-select:none;
+  }
+  .love-btn:active{ transform:scale(.98) }
+  .love-btn .heart-ico{ filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 10px 22px rgba(255,111,145,.35), 0 0 0 0 rgba(255,111,145,.35) }
+    50%{ box-shadow:0 10px 22px rgba(255,111,145,.35), 0 0 0 16px rgba(255,111,145,0) }
+  }
+  .burst{ position:absolute; inset:0; pointer-events:none; overflow:visible; }
+  .burst span{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-size:14px; color:#ff8fab; will-change:transform,opacity; animation:pop 900ms ease-out forwards;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  @keyframes pop{
+    0%{ opacity:1; transform:translate(-50%,-50%) scale(.4) }
+    80%{ opacity:1 }
+    100%{ opacity:0; transform:translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.9) }
+  }
+
+  /* Botón “Instalar app” flotante */
+  .install-btn{
+    position: fixed; right: 14px; bottom: 14px; z-index: 10;
+    padding:.7rem 1rem; border-radius:999px; border:none; cursor:pointer;
+    background:#ffffffdd; color:#a14d66; font-weight:800; box-shadow:0 6px 18px rgba(0,0,0,.15);
+    display:none;
+  }
+  .install-btn.show{ display:inline-block; }
+
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 </style>
+</head>
+<body>
+
+<!-- Fondo: corazones flotando -->
+<div class="bg-hearts" aria-hidden="true" id="bg"></div>
+
+<div class="wrap">
+  <div class="card" role="group" aria-label="Tarjeta de San Valentín">
+    <h2 class="title">Maribel ❤️ Cristian</h2>
+    <p class="subtitle">Para el amor de mi vida:</p>
+    <p class="subtitle">Si pudiera elegir un lugar seguro, seria a tu lado. </p>
+    <p class="subtitle">Cuánto más tiempo estoy contigo más te amo. </p>
+
+    <!-- Lienzo del árbol animado -->
+    <div class="canvas-wrap">
+      <canvas id="heartTreeCanvas"></canvas>
+    </div>
+
+    <p class="lead">Mi amor por ti comenzó hace…</p>
+    <p class="timer"><span id="d"></span> días <span id="h"></span> horas <span id="m"></span> minutos <span id="s"></span> segundos</p>
+
+    <div class="ground" aria-hidden="true"></div>
+
+    <!-- Botón Te amo + estallido -->
+    <div class="cta">
+      <button class="love-btn" id="loveBtn" aria-live="polite" aria-label="Te amo">
+        <span class="heart-ico" aria-hidden="true">💗</span>
+        Te amo
+        <span class="heart-ico" aria-hidden="true">💗</span>
+        <span class="burst" aria-hidden="true" id="burst"></span>
+      </button>
+    </div>
+
+    <!-- Audio: coloca tu archivo local con este nombre -->
+    <audio id="bgMusic" preload="auto">
+      <source src="Married-Life-Up.mp3" type="audio/mpeg">
+      Tu navegador no soporta audio HTML5.
+    </audio>
+  </div>
+</div>
+
+<!-- Botón flotante para instalar PWA -->
+<button id="pwaInstall" class="install-btn" aria-label="Instalar app">➕ Instalar app</button>
 
 <script>
-// ===============================
-//       ÁRBOL EN FORMA DE CORAZÓN
-// ===============================
-const canvas = document.getElementById("heartTree");
-const ctx = canvas.getContext("2d");
-
-function resizeCanvas() {
-    canvas.width = canvas.clientWidth * 2;
-    canvas.height = canvas.clientHeight * 2;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-// PALLETA ROJOS Y ROSAS
-const COLORS = [
-    "#ff1744","#ff3d57","#ff6f71","#ff8a80","#ffadc2",
-    "#ff4d4d","#ff335f","#ff5c8a","#ff7a90","#ff9999"
+/* ========= Ajustes personalizados ========= */
+const FECHA_INICIO = "2024-12-20"; // 20/12/2024
+const HEART_COLORS = [
+  // Rojos
+  "#FF1744","#E53935","#F44336","#D32F2F","#C62828",
+  // Rosas
+  "#FF3D7F","#FF6F91","#FF8A80","#F06292","#E91E63","#F48FB1"
 ];
+const LEAF_COUNT = 420, LEAF_FALL_PROB = 0.0012, WIND_STRENGTH = 0.45, BG_HEARTS = 22;
 
-// HOJAS
-let leaves = [];
-function createLeaves() {
-    leaves = [];
-    const cx = canvas.width / 2;
-    const cy = canvas.height * 0.40;
+/* ========= Fondo con corazones ========= */
+(function bgHearts(){
+  const bg = document.getElementById('bg');
+  const durBase = 20;
+  for(let i=0;i<BG_HEARTS;i++){
+    const span = document.createElement('span');
+    span.className = 'bg-heart';
+    span.textContent = '💗';
+    span.style.left = (Math.random()*100)+'%';
+    span.style.bottom = (-20 + Math.random()*40) + 'vh';
+    span.style.fontSize = (18 + Math.random()*42)+'px';
+    span.style.opacity = (0.10 + Math.random()*0.18);
+    span.style.animationDuration = (durBase + Math.random()*14)+'s';
+    span.style.animationDelay = (-Math.random()*durBase)+'s';
+    bg.appendChild(span);
+  }
+})();
 
-    for (let i = 0; i < 350; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 180 * Math.sqrt(Math.random());
+/* ========= Árbol en canvas ========= */
+const canvas = document.getElementById('heartTreeCanvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+let W, H, DPR;
 
-        const x = cx + radius * Math.cos(angle);
-        const y = cy + radius * Math.sin(angle) * 0.65;
-
-        leaves.push({
-            x, y,
-            size: Math.random() * 12 + 8,
-            color: COLORS[Math.floor(Math.random()*COLORS.length)],
-            fall: Math.random() < 0.01 ? true : false,
-            vy: Math.random() * 0.4 + 0.2,
-            vx: (Math.random() - 0.5) * 0.3,
-            rotate: Math.random() * Math.PI,
-            vr: (Math.random()-0.5) * 0.02
-        });
-    }
+function fitCanvas(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const wrap = canvas.parentElement.getBoundingClientRect();
+  W = wrap.width; H = wrap.height;
+  canvas.width = Math.floor(W * DPR); canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
 }
-createLeaves();
+fitCanvas(); addEventListener('resize', fitCanvas);
 
-function drawHeart(x, y, size, rot, color) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-    ctx.scale(size, size);
-
-    ctx.beginPath();
-    ctx.moveTo(0, -2);
-    ctx.bezierCurveTo(2, -4, 6, -2, 0, 4);
-    ctx.bezierCurveTo(-6, -2, -2, -4, 0, -2);
-    ctx.closePath();
-
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.restore();
+function trunkPath(){
+  const baseY = H*0.88;
+  ctx.save(); ctx.beginPath();
+  ctx.moveTo(W*0.62, baseY);
+  ctx.bezierCurveTo(W*0.60, H*0.72, W*0.58, H*0.60, W*0.59, H*0.48);
+  ctx.bezierCurveTo(W*0.60, H*0.40, W*0.57, H*0.30, W*0.56, H*0.22);
+  ctx.lineTo(W*0.53, H*0.22);
+  ctx.bezierCurveTo(W*0.52, H*0.32, W*0.51, H*0.44, W*0.52, H*0.52);
+  ctx.bezierCurveTo(W*0.52, H*0.64, W*0.50, H*0.74, W*0.48, H*0.88);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, H*0.2, 0, H*0.9);
+  grad.addColorStop(0, '#b18063'); grad.addColorStop(1, '#8f5f47');
+  ctx.fillStyle = grad; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(0,0,0,.10)'; ctx.stroke(); ctx.restore();
 }
-
-function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // tronco
-    ctx.fillStyle = "#8f5f30";
-    ctx.fillRect(canvas.width/2 - 12, canvas.height*0.40, 24, 160);
-
-    leaves.forEach(l => {
-        if (l.fall) {
-            l.y += l.vy;
-            l.x += l.vx;
-            l.rotate += l.vr;
-        } else if (Math.random() < 0.0006) {
-            l.fall = true;
-        }
-
-        drawHeart(l.x, l.y, l.size * 0.1, l.rotate, l.color);
+function drawHeart(x, y, s, r, color){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(r); ctx.scale(s,s);
+  ctx.beginPath();
+  ctx.moveTo(0,-10);
+  ctx.bezierCurveTo(12,-24, 34,-14, 0, 12);
+  ctx.bezierCurveTo(-34,-14, -12,-24, 0,-10);
+  ctx.closePath();
+  const g = ctx.createRadialGradient(-4,-8,1, 0,0,26);
+  g.addColorStop(0,'rgba(255,255,255,.95)');
+  g.addColorStop(0.2,'rgba(255,255,255,.25)');
+  g.addColorStop(0.25,color);
+  g.addColorStop(1,color);
+  ctx.fillStyle = g; ctx.fill(); ctx.restore();
+}
+const leaves=[], falling=[];
+function seedLeaves(){
+  leaves.length=0;
+  const cx=W*0.48, cy=H*0.32, rx=W*0.28, ry=H*0.22;
+  for(let i=0;i<LEAF_COUNT;i++){
+    let x,y,tries=0;
+    do{ x=(Math.random()*2-1)*rx; y=(Math.random()*2-1)*ry; tries++; if(tries>10) break; }
+    while((x*x)/(rx*rx) + (y*y)/(ry*ry) > 1);
+    const baseX=cx+x+(Math.random()-0.5)*6;
+    const baseY=cy+y+(Math.random()-0.5)*6;
+    leaves.push({
+      baseX, baseY, size:0.25+Math.random()*0.52, rot0:Math.random()*Math.PI,
+      color: HEART_COLORS[(Math.random()*HEART_COLORS.length)|0],
+      swayA:5+Math.random()*10, swayW:.6+Math.random()*1.1, rotA:0.18+Math.random()*0.55, t0:Math.random()*1000
     });
-
-    requestAnimationFrame(animate);
+  }
 }
-animate();
-
-// ===============================
-//          CONTADOR EN UTC
-// ===============================
-function startCounter(dateStr) {
-    const [Y, M, D] = dateStr.split("-").map(Number);
-    const start = Date.UTC(Y, M-1, D);
-
-    function tick() {
-        let diff = Date.now() - start;
-        const d = Math.floor(diff / 86400000);
-        diff -= d * 86400000;
-        const h = Math.floor(diff / 3600000);
-        diff -= h * 3600000;
-        const m = Math.floor(diff / 60000);
-        diff -= m * 60000;
-        const s = Math.floor(diff / 1000);
-
-        document.getElementById("d").textContent = d;
-        document.getElementById("h").textContent = h;
-        document.getElementById("m").textContent = m;
-        document.getElementById("s").textContent = s;
+seedLeaves();
+let tStart=performance.now();
+function tick(now){
+  const t=(now-tStart)/1000;
+  ctx.clearRect(0,0,W,H);
+  const bgGrad = ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0, '#fff2f7'); bgGrad.addColorStop(1, '#ffe6ef');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0,0,W,H);
+  trunkPath();
+  for(const leaf of leaves){
+    const wind=Math.sin((t+leaf.t0)*leaf.swayW)*leaf.swayA*WIND_STRENGTH;
+    const x=leaf.baseX+wind;
+    const y=leaf.baseY+Math.sin((t+leaf.t0)*leaf.swayW*0.9)*2;
+    const r=leaf.rot0+Math.sin((t+leaf.t0)*leaf.swayW)*leaf.rotA;
+    drawHeart(x,y,leaf.size,r,leaf.color);
+    if(Math.random()<LEAF_FALL_PROB){
+      falling.push({x,y,vx:(Math.random()*0.6+0.2)*(Math.random()<.5?-1:1), vy:-(Math.random()*0.3),
+                    rot:r, vr:(Math.random()-.5)*0.06, size:leaf.size, color:leaf.color, life:0});
     }
-    tick();
-    setInterval(tick, 1000);
+  }
+  for(let i=falling.length-1;i>=0;i--){
+    const f=falling[i]; f.life+=1/60;
+    const gust=Math.sin((t+f.life*2)*1.4)*0.16*WIND_STRENGTH;
+    f.vx+=gust*0.002; f.vy+=0.055; f.x+=f.vx*2; f.y+=f.vy*2; f.rot+=f.vr;
+    drawHeart(f.x,f.y,f.size,f.rot,f.color);
+    if(f.y>H+40) falling.splice(i,1);
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+addEventListener('resize', ()=>{ fitCanvas(); seedLeaves(); });
+
+/* ========= Contador ========= */
+function startCounter(isoDate){
+  const start=new Date(isoDate+"T00:00:00");
+  function update(){
+    const now=new Date(); let diff=Math.max(0, now-start);
+    const d=Math.floor(diff/(1000*60*60*24)); diff-=d*(1000*60*60*24);
+    const h=Math.floor(diff/(1000*60*60)); diff-=h*(1000*60*60);
+    const m=Math.floor(diff/(1000*60)); diff-=m*(1000*60);
+    const s=Math.floor(diff/1000);
+    dEl.textContent=d; hEl.textContent=String(h).padStart(2,'0');
+    mEl.textContent=String(m).padStart(2,'0'); sEl.textContent=String(s).padStart(2,'0');
+  }
+  const dEl=document.getElementById('d'), hEl=document.getElementById('h'),
+        mEl=document.getElementById('m'), sEl=document.getElementById('s');
+  update(); setInterval(update, 1000);
+}
+startCounter(FECHA_INICIO);
+
+/* ========= Botón Te amo + Música ========= */
+const btn=document.getElementById('loveBtn');
+const burst=document.getElementById('burst');
+const music=document.getElementById('bgMusic');
+function burstHearts(){
+  const N=14;
+  for(let i=0;i<N;i++){
+    const span=document.createElement('span');
+    span.textContent=['💗','💖','💕','💞'][Math.floor(Math.random()*4)];
+    const ang=(i/N)*Math.PI*2+(Math.random()-.5)*0.6;
+    const dist=60+Math.random()*80;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist-20;
+    span.style.setProperty('--dx', dx+'px');
+    span.style.setProperty('--dy', dy+'px');
+    span.style.setProperty('--rot', (Math.random()*720-360)+'deg');
+    span.style.fontSize=(16+Math.random()*12)+'px';
+    span.style.animationDuration=(700+Math.random()*400)+'ms';
+    burst.appendChild(span); setTimeout(()=> span.remove(), 1200);
+  }
+}
+btn.addEventListener('click', async ()=>{
+  burstHearts();
+  if(navigator.vibrate) navigator.vibrate([25,50,25]);
+  try{ music.paused ? await music.play() : music.pause(); }catch{}
+});
+
+/* ========= Registro PWA + botón Instalar ========= */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
+  });
 }
 
-startCounter("2024-12-20");
+let deferredPrompt;
+const installBtn = document.getElementById('pwaInstall');
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.classList.add('show');
+});
+
+installBtn.addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  installBtn.classList.remove('show');
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+});
+
+window.addEventListener('appinstalled', ()=> installBtn.classList.remove('show'));
 </script>
 </body>
+</html>
