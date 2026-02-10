@@ -1,356 +1,302 @@
 <!DOCTYPE html>
 html
-<body>
-  <!-- Fondo rosa con corazones “bokeh” -->
-  <div class="bg">
-    <div id="bg-hearts"></div>
-  </div>
+<style>
+body{
+    margin:0;
+    font-family: "Arial Rounded MT", sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #ff4aa8 0%, transparent 60%),
+                radial-gradient(1000px 600px at 120% 10%, #ff0f82 0%, transparent 60%),
+                linear-gradient(180deg,#ff4aa8,#c60067);
+    overflow-x:hidden;
+}
 
-  <!-- Tarjeta -->
-  <section class="scene">
-    <div class="card">
-      <p class="title">Para el amor de mi vida:</p>
+/* Fondo bokeh */
+#bg-hearts span{
+    position:absolute;
+    color:#ffc4df;
+    opacity:.22;
+    font-size:clamp(18px,5vw,38px);
+    animation: floatUp linear infinite;
+    filter:blur(.4px);
+}
+@keyframes floatUp{
+    from{ transform:translateY(100vh) rotate(0deg); }
+    to{ transform:translateY(-20vh) rotate(360deg); }
+}
 
-      <!-- Canvas del árbol -->
-      <div class="tree-wrap">
-        <canvas id="treeCanvas"></canvas>
-      </div>
+.love-card{
+    width:92%;
+    max-width:900px;
+    margin:32px auto;
+    background:#f7e8dd;
+    border-radius:40px;
+    padding:26px;
+    box-shadow:0 16px 46px rgba(0,0,0,.22);
+}
 
-      <p class="lead">Mi amor por ti comenzó hace…</p>
+.title{
+    font-size:clamp(20px,4vw,26px);
+    font-weight:600;
+    color:#573a3a;
+    margin-bottom:12px;
+}
 
-      <p class="timer">
-        <span id="d" class="num"></span> <span class="unit">días</span>
-        <span id="h" class="num"></span> <span class="unit">horas</span>
-        <span id="m" class="num"></span> <span class="unit">minutos</span>
-        <span id="s" class="num"></span> <span class="unit">segundos</span>
-      </p>
+.tree-area{
+    width:100%;
+    aspect-ratio: 16/9;
+    background:linear-gradient(#faefe7,#f1e3d7);
+    border-radius:24px;
+    overflow:hidden;
+    position:relative;
+}
 
-      <div class="floor" aria-hidden="true"></div>
-    </div>
-  </section>
+#treeCanvas{
+    width:100%; height:100%; display:block;
+}
 
-  <style>
-    :root{
-      --bg-1:#d1006c;
-      --bg-2:#ff3b93;
-      --card:#f7e8dd;        /* beige de la tarjeta */
-      --ink:#3a2e2e;
-      --muted:#6c5959;
-      --floor:#3e3232;
-    }
+.lead{ margin:14px 0 4px; color:#6a5555; font-size:1.1rem; }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
-      color:var(--ink);
-      background: radial-gradient(1100px 600px at 20% -10%, #ff6aa540, transparent 60%),
-                  radial-gradient(900px 600px at 110% 10%, #ff2b7a33, transparent 60%),
-                  linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
-      overflow-x:hidden;
-    }
+.timer{
+    font-size:1.7rem;
+    font-weight:800;
+    display:flex;
+    gap:.4rem .3rem;
+    flex-wrap:wrap;
+    color:#3a2e2e;
+}
 
-    /* corazones bokeh del fondo */
-    .bg{position:fixed; inset:0; z-index:-2; overflow:hidden}
-    #bg-hearts span{
-      position:absolute;
-      color:#ffd0e1;
-      opacity:.22;
-      font-size:clamp(18px, 4vw, 34px);
-      filter: blur(.6px);
-      animation: floatUp linear infinite;
-    }
-    @keyframes floatUp{
-      from{ transform:translateY(110vh) rotate(0deg) }
-      to  { transform:translateY(-20vh) rotate(360deg) }
-    }
+.unit{ font-size:1rem; margin-right:.4rem; color:#6a5555; }
 
-    /* contenedor de la tarjeta */
-    .scene{
-      max-width:980px;
-      margin:24px auto 40px;
-      padding:14px;
-    }
+.floor{
+    margin-top:10px;
+    background:#3a2e2e;
+    height:2px;
+    border-radius:2px;
+}
+</style>
 
-    .card{
-      background:var(--card);
-      border-radius:40px;
-      padding:28px 26px 20px;
-      box-shadow:0 16px 42px rgba(0,0,0,.22);
-      position:relative;
-    }
 
-    .title{
-      margin:6px 2px 10px;
-      color:#5a4747;
-      font-size:clamp(18px, 3.6vw, 22px);
-      font-weight:600;
-    }
+---
 
-    .tree-wrap{
-      position:relative;
-      width:100%;
-      aspect-ratio: 16/9;
-      border-radius:22px;
-      overflow:hidden; /* para recortar la copa como en el video */
-      background: linear-gradient(180deg,#f9eee6 0%, #f4e4d8 100%);
-    }
+# 🍒 SCRIPT — Árbol con forma de corazón súper agrupado  
+📌 Esta versión:
 
-    #treeCanvas{
-      width:100%;
-      height:100%;
-      display:block;
-    }
+- Hace la *copa más densa*  
+- Ajusta la *forma exacta del corazón*  
+- Agrupa los corazones igual al video  
+- Reduce el espacio vacío  
+- Ajusta caída y viento como en el video  
+- Mantiene tu contador funcionando perfecto
 
-    .lead{
-      margin:16px 2px 2px;
-      color:var(--muted);
-      font-weight:500;
-    }
+Pega esto *reemplazando todo tu <script> completo*:
 
-    .timer{
-      margin:0 2px 10px;
-      display:flex; flex-wrap:wrap; gap:.45rem .35rem; align-items:baseline;
-      color:var(--ink);
-    }
-    .timer .num{
-      font-size:clamp(20px, 4.8vw, 28px);
-      font-weight:800;
-      letter-spacing:.2px;
-      margin-right:.25rem;
-    }
-    .timer .unit{
-      color:#5f5252;
-      font-weight:600;
-      margin-right:.6rem;
-    }
+html
+<script>
+// ===============================
+//   FONDO: corazones fucsia
+// ===============================
+(function(){
+  const cont = document.createElement("div");
+  cont.id="bg-hearts";
+  cont.style.position="fixed";
+  cont.style.inset="0";
+  cont.style.zIndex="-1";
+  cont.style.overflow="hidden";
+  document.body.appendChild(cont);
 
-    .floor{
-      height:2px; background:var(--floor);
-      margin-top:8px; border-radius:2px;
-    }
-  </style>
-
-  <script>
-  /* ===========================
-     Corazones bokeh del fondo
-     =========================== */
-  (function fillBackgroundHearts(){
-    const container = document.getElementById('bg-hearts');
-    const N = 28, durBase = 22;
-    for(let i=0;i<N;i++){
-      const s = document.createElement('span');
-      s.textContent = '❤';
-      s.style.left = (Math.random()*100)+'%';
-      s.style.bottom = (-20 + Math.random()*40) + 'vh';
-      s.style.fontSize = (18 + Math.random()*46)+'px';
-      s.style.opacity = (0.14 + Math.random()*0.18);
-      s.style.animationDuration = (durBase + Math.random()*16)+'s';
-      s.style.animationDelay = (-Math.random()*durBase)+'s';
-      container.appendChild(s);
-    }
-  })();
-
-  /* ===========================
-     Árbol con copa en forma de corazón
-     =========================== */
-  const canvas = document.getElementById('treeCanvas');
-  const ctx = canvas.getContext('2d', { alpha:true });
-
-  let W,H,DPR;
-  function fit(){
-    DPR = Math.min(window.devicePixelRatio||1, 2);
-    const bb = canvas.getBoundingClientRect();
-    W = Math.floor(bb.width);
-    H = Math.floor(bb.height);
-    canvas.width = W * DPR;
-    canvas.height = H * DPR;
-    ctx.setTransform(DPR,0,0,DPR,0,0);
+  const N = 28;
+  for(let i=0;i<N;i++){
+    const h = document.createElement("span");
+    h.textContent="❤";
+    h.style.left = (Math.random()*100)+"%";
+    h.style.bottom = (-30+Math.random()*40)+"vh";
+    h.style.animationDuration = (18+Math.random()*12)+"s";
+    h.style.animationDelay = (-Math.random()*20)+"s";
+    cont.appendChild(h);
   }
-  fit(); addEventListener('resize', fit);
+})();
 
-  // paleta rojos/rosas
-  const PALETTE = [
-    "#FF1744","#F44336","#E53935","#D32F2F","#C62828",
-    "#FF3D7F","#FF6F91","#FF8A80","#F06292","#E91E63","#F48FB1"
-  ];
 
-  // función para saber si (x,y) está dentro de una forma de corazón
-  // (x,y) normalizados en [-1.2,1.2]
-  function insideHeart(x, y){
-    const a = (x*x + y*y - 1);
-    return (a*a*a - x*x*y*y*y) <= 0;
+// ===============================
+//        ÁRBOL EN CORAZÓN
+// ===============================
+const canvas = document.getElementById("treeCanvas");
+const ctx = canvas.getContext("2d",{alpha:true});
+
+let W,H,DPR;
+function fit(){
+  DPR = Math.min(window.devicePixelRatio||1,2);
+  const r = canvas.getBoundingClientRect();
+  W = r.width;
+  H = r.height;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+fit();
+addEventListener("resize",fit);
+
+// Fórmula del corazón (más compacto, más denso)
+function inHeart(nx, ny){
+  const a = nx*nx + ny*ny - 1;
+  return (a*a*a - nx*nx*ny*ny*ny) <= 0;
+}
+
+const PALETTE = [
+  "#FF1744","#ff3d57","#ff6f71","#ff8a80","#ffadc2",
+  "#ff4d4d","#ff335f","#ff5c8a","#ff7a90","#ff9999"
+];
+
+const leaves = [];
+const falling = [];
+
+function seed(){
+  leaves.length=0;
+  falling.length=0;
+
+  // área del corazón
+  const cx = W*0.65;
+  const cy = H*0.47;
+  const sx = W*0.19;
+  const sy = H*0.22;
+
+  const COUNT = 620; // MÁS AGRUPADO
+  for(let i=0;i<COUNT;i++){
+    let nx, ny, tries=0;
+    do{
+      nx=(Math.random()*2.4-1.2);
+      ny=(Math.random()*2.4-1.2);
+      tries++;
+      if(tries>18) break;
+    }while(!inHeart(nx,ny));
+
+    const x = cx + nx*sx + (Math.random()-0.5)*5;
+    const y = cy + ny*sy + (Math.random()-0.5)*5;
+
+    leaves.push({
+      baseX:x, baseY:y,
+      x,y,
+      size:8+Math.random()*12,
+      rot:Math.random()*Math.PI,
+      color:PALETTE[(Math.random()*PALETTE.length)|0],
+      swayA:4+Math.random()*6,
+      swayW:.6+Math.random()*1.1,
+      t0:Math.random()*800
+    });
   }
+}
+seed();
 
-  const leaves = [];
-  const falling = [];
+function drawHeart(x,y,s,rot,col){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(rot);
+  ctx.scale(s*0.1, s*0.1);
+  ctx.beginPath();
+  ctx.moveTo(0,-10);
+  ctx.bezierCurveTo(12,-24,34,-14,0,12);
+  ctx.bezierCurveTo(-34,-14,-12,-24,0,-10);
+  ctx.closePath();
+  ctx.fillStyle=col;
+  ctx.shadowColor="rgba(0,0,0,.15)";
+  ctx.shadowBlur=2;
+  ctx.fill();
+  ctx.restore();
+}
 
-  function seedTree(){
-    leaves.length = 0;
-    falling.length = 0;
+function drawTrunk(){
+  const bx=W*0.63, top=H*0.56, bottom=H*0.90;
+  ctx.fillStyle="#8f5f30";
+  ctx.beginPath();
+  ctx.moveTo(bx-14,top);
+  ctx.lineTo(bx+14,top);
+  ctx.lineTo(bx+22,bottom);
+  ctx.lineTo(bx-22,bottom);
+  ctx.closePath();
+  ctx.fill();
+}
 
-    // posición de la copa y escala (a la derecha de la tarjeta)
-    const cx = W * 0.66;
-    const cy = H * 0.46;
-    const sx = W * 0.18;    // escala en X
-    const sy = H * 0.22;    // escala en Y
+const FALL_PROB = 0.0010;  // ligera caída
+const WIND = 0.34;
 
-    const count = 520;      // densidad de follaje
-    for(let i=0;i<count;i++){
-      // muestreo por rechazo dentro del corazón normalizado
-      let x,y,tries=0;
-      do{
-        x = (Math.random()*2.4 - 1.2);
-        y = (Math.random()*2.4 - 1.2);
-        tries++;
-        if(tries>20) break;
-      }while(!insideHeart(x,y));
+let start = performance.now();
+function render(t){
+  const tt=(t-start)/1000;
+  ctx.clearRect(0,0,W,H);
 
-      const px = cx + x*sx + (Math.random()-0.5)*6;
-      const py = cy + y*sy + (Math.random()-0.5)*6;
+  // fondo interno del canvas
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#faefe7");
+  g.addColorStop(1,"#f1e3d7");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
 
-      leaves.push({
-        x: px, y: py,
-        baseX: px, baseY: py,
-        size: 8 + Math.random()*10,
-        rot: Math.random()*Math.PI,
-        color: PALETTE[(Math.random()*PALETTE.length)|0],
-        swayA: 4 + Math.random()*8,
-        swayW: .6 + Math.random()*1.1,
-        t0: Math.random()*1000
+  drawTrunk();
+
+  for(const l of leaves){
+    const wind = Math.sin((tt+l.t0)*l.swayW)*l.swayA*WIND;
+    const x = l.baseX + wind;
+    const y = l.baseY + Math.sin((tt+l.t0)*l.swayW*0.9)*1.6;
+    const r = l.rot + Math.sin((tt+l.t0)*l.swayW)*0.16;
+
+    drawHeart(x,y,l.size,r,l.color);
+
+    if(Math.random()<FALL_PROB && x<W*0.72){
+      falling.push({
+        x,y,
+        vx:-(0.4+Math.random()*0.5),
+        vy:(0.25+Math.random()*0.4),
+        rot:r, vr:(Math.random()-.5)*0.04,
+        size:l.size, color:l.color, life:0
       });
     }
   }
-  seedTree();
 
-  function drawHeart(x,y,s,rot,col){
-    ctx.save();
-    ctx.translate(x,y);
-    ctx.rotate(rot);
-    ctx.scale(s*0.1, s*0.1);
-    ctx.beginPath();
-    ctx.moveTo(0,-10);
-    ctx.bezierCurveTo(12,-24, 34,-14, 0, 12);
-    ctx.bezierCurveTo(-34,-14, -12,-24, 0,-10);
-    ctx.closePath();
-    // relleno sólido (estética del ejemplo)
-    ctx.fillStyle = col;
-    ctx.shadowColor = 'rgba(0,0,0,.12)';
-    ctx.shadowBlur = 2;
-    ctx.fill();
-    ctx.restore();
+  // caída de hojas
+  for(let i=falling.length-1;i>=0;i--){
+    const f=falling[i];
+    f.life+=1/60;
+    f.vx+= -0.002;
+    f.vy+= 0.018;
+    f.x+= f.vx*1.4;
+    f.y+= f.vy*1.4;
+    f.rot+= f.vr;
+
+    drawHeart(f.x,f.y,f.size,f.rot,f.color);
+    if(f.y>H+40 || f.x<-40) falling.splice(i,1);
   }
 
-  function drawTrunk(){
-    // tronco delgado y recto
-    const baseX = W*0.64, topY = H*0.55, bottomY = H*0.90;
-    ctx.save();
-    ctx.fillStyle = '#8f5f30';
-    ctx.beginPath();
-    ctx.moveTo(baseX-14, topY);
-    ctx.lineTo(baseX+14, topY);
-    ctx.lineTo(baseX+20, bottomY);
-    ctx.lineTo(baseX-20, bottomY);
-    ctx.closePath();
-    ctx.fill();
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
 
-    // ramitas internas discretas
-    ctx.strokeStyle = '#7c5330';
-    ctx.lineWidth = 2;
-    for(let i=0;i<8;i++){
-      ctx.beginPath();
-      ctx.moveTo(baseX + (Math.random()*10-5), topY+4);
-      const rx = baseX + (Math.random()*W*0.22);
-      const ry = topY - (Math.random()*H*0.18);
-      ctx.lineTo(rx, ry);
-      ctx.stroke();
-    }
-    ctx.restore();
+
+// ===============================
+//        CONTADOR EN UTC
+// ===============================
+function startCounter(dateStr){
+  const [Y,M,D]=dateStr.split("-").map(Number);
+  const startUTC=Date.UTC(Y,M-1,D);
+
+  const dEl=document.getElementById("d");
+  const hEl=document.getElementById("h");
+  const mEl=document.getElementById("m");
+  const sEl=document.getElementById("s");
+
+  function update(){
+    let diff=Date.now()-startUTC;
+    const d=Math.floor(diff/86400000); diff-=d*86400000;
+    const h=Math.floor(diff/3600000); diff-=h*3600000;
+    const m=Math.floor(diff/60000); diff-=m*60000;
+    const s=Math.floor(diff/1000);
+    dEl.textContent=d;
+    hEl.textContent=h;
+    mEl.textContent=String(m).padStart(2,"0");
+    sEl.textContent=String(s).padStart(2,"0");
   }
+  update();
+  setInterval(update,1000);
+}
 
-  // Parámetros de caída (lento hacia la izquierda como el video)
-  const LEAF_FALL_PROB = 0.0010; // menos desprendimientos
-  const WIND_STRENGTH  = 0.35;
-
-  let tStart = performance.now();
-  function tick(now){
-    const t = (now - tStart)/1000;
-
-    ctx.clearRect(0,0,W,H);
-
-    // fondo de la “escena” (muy sutil dentro del canvas)
-    const g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#f9efe7'); g.addColorStop(1,'#f2e1d7');
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-
-    drawTrunk();
-
-    // hojas “pegadas” con suave vaivén
-    for(const leaf of leaves){
-      const wind = Math.sin((t+leaf.t0)*leaf.swayW) * leaf.swayA * WIND_STRENGTH;
-      const x = leaf.baseX + wind;
-      const y = leaf.baseY + Math.sin((t+leaf.t0)*leaf.swayW*0.9)*1.6;
-      const r = leaf.rot + Math.sin((t+leaf.t0)*leaf.swayW)*0.15;
-      drawHeart(x,y,leaf.size,r,leaf.color);
-
-      // ocasionalmente se desprenden (desde la zona inferior‑izquierda de la copa)
-      if(Math.random() < LEAF_FALL_PROB && x < W*0.72){
-        falling.push({
-          x, y,
-          vx: -(0.4 + Math.random()*0.6), // se mueven hacia la izquierda
-          vy:  (0.3 + Math.random()*0.5),
-          rot: r, vr: (Math.random()-.5)*0.04,
-          size: leaf.size, color: leaf.color, life: 0
-        });
-      }
-    }
-
-    // hojas cayendo con trayectoria dulce a la izquierda
-    for(let i=falling.length-1; i>=0; i--){
-      const f = falling[i];
-      f.life += 1/60;
-      const gust = Math.sin((t+f.life*2)*1.1)*0.12*WIND_STRENGTH;
-      f.vx += (-0.003 + gust*0.002); // empuje leeeeve a la izquierda
-      f.vy +=  0.020;                // gravedad pequeña (caída lenta)
-      f.x  +=  f.vx * 1.4;
-      f.y  +=  f.vy * 1.4;
-      f.rot+=  f.vr;
-      drawHeart(f.x,f.y,f.size,f.rot,f.color);
-      if(f.y > H+30 || f.x < -30) falling.splice(i,1);
-    }
-
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-
-  addEventListener('resize', ()=>{ fit(); seedTree(); });
-
-  /* ===========================
-     Contador en UTC (sin desfase)
-     =========================== */
-  const FECHA_INICIO = "2024-12-20"; // <-- ajusta aquí si cambias la fecha
-  function startCounter(isoDate){
-    const [Y,M,D] = isoDate.split('-').map(Number);
-    const startUTC = Date.UTC(Y, M-1, D, 0,0,0);
-    const dEl = document.getElementById('d');
-    const hEl = document.getElementById('h');
-    const mEl = document.getElementById('m');
-    const sEl = document.getElementById('s');
-
-    function update(){
-      let diff = Math.max(0, Date.now() - startUTC);
-      const d = Math.floor(diff/86400000); diff -= d*86400000;
-      const h = Math.floor(diff/3600000);  diff -= h*3600000;
-      const m = Math.floor(diff/60000);    diff -= m*60000;
-      const s = Math.floor(diff/1000);
-      dEl.textContent=d;
-      hEl.textContent=String(h);
-      mEl.textContent=String(m).padStart(2,'0');
-      sEl.textContent=String(s).padStart(2,'0');
-    }
-    update(); setInterval(update, 1000);
-  }
-  startCounter(FECHA_INICIO);
-  </script>
-</body>
+startCounter("2024-12-20");
+</script>
